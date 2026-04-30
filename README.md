@@ -1,4 +1,4 @@
-# Obsidianプラグイン「JpBooks」基本仕様書
+# Obsidianプラグイン「JpBooks」
 
 **バージョン**: 1.1  
 **作成日**: 2026-03-03
