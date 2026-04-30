@@ -1,0 +1,5 @@
+{
+  "folderPath": "Books/",
+  "fileNameFormat": "{{title}}",
+  "template": "---\ntitle: \"{{title}}\"\nauthor: \"{{author}}\"\npublisher: \"{{publisher}}\"\npublished: {{published}}\nisbn: \"{{isbn}}\"\ntags:\n  - 読書ノート\ncreated: {{DATE}}\n---\n\n## 内容紹介\n\n{{description}}\n\n## メモ\n\n"
+}

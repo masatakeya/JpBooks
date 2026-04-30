@@ -1,0 +1,10 @@
+{
+  "id": "jpbooks",
+  "name": "JpBooks",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "日本の書籍情報を複数のデータソースから取得し、読書ノートを自動生成するプラグイン",
+  "author": "JpBooks",
+  "authorUrl": "",
+  "isDesktopOnly": false
+}
