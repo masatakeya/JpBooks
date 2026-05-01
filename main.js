@@ -211,7 +211,7 @@ var import_obsidian3 = require("obsidian");
 async function fetchFromNDL(query, isIsbn = false) {
   var _a;
   try {
-    const param = isIsbn ? `isbn=${encodeURIComponent(query)}` : `any=${encodeURIComponent(query)}`;
+    const param = isIsbn ? `isbn=${encodeURIComponent(query)}` : `title=${encodeURIComponent(query)}`;
     const url = `https://ndlsearch.ndl.go.jp/api/opensearch?${param}&cnt=20`;
     const response = await (0, import_obsidian3.requestUrl)({ url, method: "GET" });
     const text = response.text;
