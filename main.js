@@ -447,23 +447,25 @@ var BookSearchModal = class extends import_obsidian4.Modal {
       metaEl.style.cssText = "font-size:12px;color:var(--text-muted);";
       item.addEventListener("mouseenter", () => {
         this.selectedIndex = i;
-        this.updateSelection();
+        this.updateSelection(false);
       });
       item.addEventListener("click", () => this.choose(book));
       if (i === this.books.length - 1) {
         item.style.borderBottom = "none";
       }
     });
-    this.updateSelection();
+    this.updateSelection(false);
   }
-  updateSelection() {
+  updateSelection(scroll = true) {
     const items = this.listEl.querySelectorAll("div");
     items.forEach((el, i) => {
       el.style.background = i === this.selectedIndex ? "var(--background-modifier-hover)" : "";
     });
-    const selected = items[this.selectedIndex];
-    if (selected)
-      selected.scrollIntoView({ block: "nearest" });
+    if (scroll) {
+      const selected = items[this.selectedIndex];
+      if (selected)
+        selected.scrollIntoView({ block: "nearest" });
+    }
   }
   moveSelection(delta) {
     if (this.books.length === 0)
@@ -472,7 +474,7 @@ var BookSearchModal = class extends import_obsidian4.Modal {
       0,
       Math.min(this.books.length - 1, this.selectedIndex + delta)
     );
-    this.updateSelection();
+    this.updateSelection(true);
   }
   choose(book) {
     this.close();
