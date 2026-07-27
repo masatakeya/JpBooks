@@ -1,10 +1,10 @@
 {
   "id": "jpbooks",
   "name": "JpBooks",
-  "version": "1.1.0",
-  "minAppVersion": "1.1.0",
-  "description": "日本の書籍情報を複数のデータソースから取得し、読書ノートを自動生成するプラグイン",
-  "author": "JpBooks",
+  "version": "2.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "国立国会図書館サーチとopenBDから日本語書籍の書誌情報を取得し、読書ノートを自動生成します。",
+  "author": "masatakeya",
   "authorUrl": "",
   "isDesktopOnly": false
 }

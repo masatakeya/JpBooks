@@ -1,0 +1,68 @@
+.jpbooks-modal {
+	width: min(720px, 90vw);
+}
+
+.jpbooks-status {
+	margin: 0.5em 0 0.75em;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.jpbooks-status-error {
+	color: var(--text-error);
+}
+
+.jpbooks-results {
+	max-height: 45vh;
+	overflow-y: auto;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.jpbooks-result {
+	padding: 0.6em 0.7em;
+	border-bottom: 1px solid var(--background-modifier-border);
+	cursor: pointer;
+	border-radius: var(--radius-s);
+}
+
+.jpbooks-result:hover,
+.jpbooks-result:focus {
+	background-color: var(--background-modifier-hover);
+	outline: none;
+}
+
+.jpbooks-result:focus {
+	box-shadow: inset 2px 0 0 var(--interactive-accent);
+}
+
+.jpbooks-result-title {
+	font-weight: var(--font-semibold);
+	line-height: 1.35;
+}
+
+.jpbooks-result-meta {
+	margin-top: 0.2em;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.jpbooks-result-note {
+	margin-top: 0.2em;
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+}
+
+.jpbooks-template-help {
+	margin-bottom: 0.5em;
+}
+
+.jpbooks-template-setting .setting-item-control {
+	width: 100%;
+}
+
+.jpbooks-template-input {
+	width: 100%;
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+	resize: vertical;
+}
