@@ -1,7 +1,7 @@
 {
   "id": "jpbooks",
   "name": "JpBooks",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "minAppVersion": "1.4.0",
   "description": "国立国会図書館サーチとopenBDから日本語書籍の書誌情報を取得し、読書ノートを自動生成します。",
   "author": "masatakeya",
