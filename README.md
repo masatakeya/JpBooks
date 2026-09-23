@@ -18,8 +18,29 @@ Googleブックスではカバーしきれない絶版本・専門書・古い�
 ### API利用上の注意
 
 - NDLサーチは同時リクエスト数に制限があり、大量アクセスは遮断される場合があります（具体的な数値は非公開）。本プラグインは1回の操作につき検索1リクエスト・内容紹介1リクエストのみを送り、検索中は追加のリクエストを受け付けません。
+- アクセス集中で `429 Too Many Requests`（または `503`）が返った場合は、`Retry-After` に従って最大2回まで自動で再試行します（待機中はモーダルに待ち時間を表示）。それでも失敗した場合は、数分おいてから再検索してください。連続して検索しても、リクエストの間隔は1秒以上空けます。
 - 旧エンドポイント `iss.ndl.go.jp` は現行の `ndlsearch.ndl.go.jp` へリダイレクトされます。本プラグインは現行エンドポイントを直接呼びます。
 - openBDに公開されたレート制限はありませんが、同様に1件ずつ問い合わせます。
+
+## インストール・アップデート（BRAT）
+
+本プラグインはコミュニティプラグイン一覧には登録していないため、[BRAT（Obsidian42 - BRAT）](https://github.com/TfTHacker/obsidian42-brat)経由でインストールします。BRATはGitHubリリースに添付された `main.js` / `manifest.json` / `styles.css` を取得します。
+
+### インストール
+
+1. コミュニティプラグインから **BRAT** をインストールして有効化
+2. コマンドパレットで **「BRAT: Add a beta plugin for testing」** を実行
+3. リポジトリ `masatakeya/JpBooks` を入力して追加
+4. 設定 → コミュニティプラグイン で **JpBooks** を有効化
+
+### アップデート
+
+新しいリリースが公開されると、BRATが更新を検出します。
+
+- BRATの設定で起動時の自動アップデートチェックが有効なら、Obsidianを再起動するだけで更新されます
+- すぐに更新したい場合は、コマンドパレットで **「BRAT: Check for updates to all beta plugins and UPDATE」** を実行します
+- 更新後に動作が変わらない場合は、Obsidianを再起動するか、JpBooksを一度無効化→有効化してください
+- 現在のバージョンは 設定 → コミュニティプラグイン の JpBooks 欄で確認できます
 
 ## 使い方
 
@@ -91,6 +112,19 @@ npm run build  # 型チェック + 本番ビルド
 
 ビルド生成物は `main.js` です。Vaultで使うには `main.js` / `manifest.json` / `styles.css` を
 `<Vault>/.obsidian/plugins/jpbooks/` にコピーし、設定画面でプラグインを有効化してください。
+
+### リリース手順
+
+BRATに更新を届けるには、GitHubリリースの作成が必要です。これは `.github/workflows/release.yml` が自動で行います。
+
+1. `manifest.json` の `version` を上げる（例: `2.0.1` → `2.0.2`）
+2. `versions.json` に `"新バージョン": "minAppVersion"` を追加する（`package.json` の `version` も合わせておく）
+3. `npm run build` で `main.js` を更新してコミットし、`main` にマージする
+4. GitHub Actions がビルドし、`v` なしのバージョン名（例: `2.0.2`）でタグとリリースを作成して、`main.js` / `manifest.json` / `styles.css` を添付する
+
+- 同じバージョンのリリースが既にある場合、ワークフローは何もしません。バージョンを上げ忘れるとリリースは作成されません
+- Actions画面から手動実行（Run workflow）することもできます
+- BRATはリリースに添付された `manifest.json` のバージョンで更新を判定します。リリースを作成しただけでバージョンが同じままだと、更新として認識されません
 
 ### 構成
 
