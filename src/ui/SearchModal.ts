@@ -105,6 +105,10 @@ export class SearchModal extends Modal {
 				creator: this.creatorQuery,
 				maxRecords: this.settings.maxResults,
 				booksOnly: this.settings.booksOnly,
+			}, (waitSeconds) => {
+				this.setStatus(
+					`NDLサーチが混雑しています。${waitSeconds}秒後に再試行します…`
+				);
 			});
 
 			if (this.results.length === 0) {

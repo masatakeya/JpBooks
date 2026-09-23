@@ -1,8 +1,19 @@
-import { requestUrl } from "obsidian";
+import { requestUrl, RequestUrlResponse } from "obsidian";
 import { BookRecord } from "../types";
 import { toIsbn13 } from "../isbn";
 
 const SRU_ENDPOINT = "https://ndlsearch.ndl.go.jp/api/sru";
+
+/** NDLサーチはAPI利用者の識別のためUser-Agentの明示を求めている */
+const USER_AGENT = "JpBooks (Obsidian plugin; +https://github.com/masatakeya/JpBooks)";
+
+/** 429/503のときの再試行回数と、1回あたりの待ち時間の上限 */
+const MAX_RETRIES = 2;
+const MAX_RETRY_WAIT_MS = 10_000;
+
+/** 連続した検索でアクセス制限にかからないよう、リクエスト間隔を空ける */
+const MIN_REQUEST_INTERVAL_MS = 1_000;
+let lastRequestAt = 0;
 
 const NS = {
 	srw: "http://www.loc.gov/zing/srw/",
@@ -28,7 +39,10 @@ export class NdlError extends Error {}
  * NDLサーチ SRU API で書誌を検索する。
  * レスポンスはSRU/XMLのため DOMParser で解析する。
  */
-export async function searchNdl(params: NdlSearchParams): Promise<BookRecord[]> {
+export async function searchNdl(
+	params: NdlSearchParams,
+	onRetry?: (waitSeconds: number) => void
+): Promise<BookRecord[]> {
 	const cql = buildCqlQuery(params);
 	if (!cql) return [];
 
@@ -39,17 +53,85 @@ export async function searchNdl(params: NdlSearchParams): Promise<BookRecord[]> 
 		`&recordPacking=xml` +
 		`&maximumRecords=${Math.min(Math.max(params.maxRecords, 1), 50)}`;
 
-	let xml: string;
-	try {
-		const res = await requestUrl({ url, method: "GET" });
-		xml = res.text;
-	} catch (e) {
-		throw new NdlError(
-			`NDLサーチへの接続に失敗しました: ${e instanceof Error ? e.message : String(e)}`
-		);
-	}
-
+	const xml = await fetchSru(url, onRetry);
 	return parseSruResponse(xml);
+}
+
+/**
+ * SRUリクエストを送る。429（アクセス集中）・503は Retry-After に従って再試行する。
+ */
+async function fetchSru(
+	url: string,
+	onRetry?: (waitSeconds: number) => void
+): Promise<string> {
+	for (let attempt = 0; ; attempt++) {
+		await waitForInterval();
+
+		let res: RequestUrlResponse;
+		try {
+			res = await requestUrl({
+				url,
+				method: "GET",
+				headers: { "User-Agent": USER_AGENT },
+				throw: false,
+			});
+		} catch (e) {
+			throw new NdlError(
+				`NDLサーチへの接続に失敗しました: ${e instanceof Error ? e.message : String(e)}`
+			);
+		} finally {
+			lastRequestAt = Date.now();
+		}
+
+		if (res.status < 400) return res.text;
+
+		const retryable = res.status === 429 || res.status === 503;
+		if (retryable && attempt < MAX_RETRIES) {
+			const waitMs = retryWaitMs(res.headers, attempt);
+			onRetry?.(Math.ceil(waitMs / 1000));
+			await sleep(waitMs);
+			continue;
+		}
+
+		if (res.status === 429) {
+			throw new NdlError(
+				"NDLサーチへのアクセスが集中しているため、一時的に検索が制限されています（429）。" +
+					"数分ほど時間をおいてから、もう一度検索してください。"
+			);
+		}
+		if (res.status === 503) {
+			throw new NdlError(
+				"NDLサーチが一時的に利用できません（503）。メンテナンス中の可能性があります。" +
+					"時間をおいてから、もう一度検索してください。"
+			);
+		}
+		throw new NdlError(`NDLサーチへのリクエストが失敗しました（ステータス ${res.status}）。`);
+	}
+}
+
+/** Retry-After（秒数またはHTTP日付）を優先し、なければ指数バックオフで待つ */
+function retryWaitMs(headers: Record<string, string>, attempt: number): number {
+	const fallback = 2_000 * 2 ** attempt;
+	const key = Object.keys(headers).find((k) => k.toLowerCase() === "retry-after");
+	const value = key ? headers[key].trim() : "";
+
+	let waitMs = fallback;
+	if (/^\d+$/.test(value)) {
+		waitMs = Number(value) * 1000;
+	} else if (value) {
+		const date = Date.parse(value);
+		if (!Number.isNaN(date)) waitMs = date - Date.now();
+	}
+	return Math.min(Math.max(waitMs, 1_000), MAX_RETRY_WAIT_MS);
+}
+
+async function waitForInterval(): Promise<void> {
+	const elapsed = Date.now() - lastRequestAt;
+	if (elapsed < MIN_REQUEST_INTERVAL_MS) await sleep(MIN_REQUEST_INTERVAL_MS - elapsed);
+}
+
+function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 /**
