@@ -1,0 +1,43 @@
+name: Release
+
+# バージョンのタグ（例: 2.0.1）を push すると、ビルドしてGitHubリリースを作成する。
+# BRATはこのリリースに添付された main.js / manifest.json / styles.css を取得する。
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+
+      - name: タグとmanifest.jsonのバージョンが一致するか確認
+        run: |
+          version=$(node -p "require('./manifest.json').version")
+          if [ "$version" != "$GITHUB_REF_NAME" ]; then
+            echo "タグ $GITHUB_REF_NAME と manifest.json のバージョン $version が一致しません" >&2
+            exit 1
+          fi
+
+      - name: ビルド
+        run: |
+          npm ci
+          npm run build
+
+      - name: リリースを作成
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            main.js manifest.json styles.css

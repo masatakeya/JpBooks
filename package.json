@@ -1,6 +1,6 @@
 {
   "name": "jpbooks",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Obsidian plugin: 日本語書籍検索（NDLサーチ + openBD）と読書ノート生成",
   "main": "main.js",
   "scripts": {
